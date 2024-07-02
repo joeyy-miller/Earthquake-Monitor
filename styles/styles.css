@@ -4,6 +4,7 @@ body {
     padding: 0;
     background-color: #121212;
     color: #ffffff;
+    overflow: hidden;
 }
 
 header {
@@ -35,11 +36,12 @@ aside {
 }
 
 #map {
-    flex: 1;
+    width: 100%;
 }
 
 #quake-list {
-    margin-bottom: 1rem;
+    min-height: 200px;
+    max-height: 40vh;
 }
 
 .quake-item {
@@ -77,6 +79,9 @@ aside {
 
 /* Media Queries */
 @media (max-width: 768px) {
+    body {
+        overflow: auto;
+    }
     #map {
         height: 50vh;
     }
@@ -84,7 +89,7 @@ aside {
         max-height: 30vh;
     }
     .col-md-3 {
-        max-height: 100vh;
+        height: auto !important;
         overflow-y: auto;
     }
 }

@@ -1,4 +1,5 @@
-# Recent Quakes - Earthquake Tracking Application
+# Earthquake Monitor - Earthquake Tracking Application
+![Screenshot of Earthquake Monitor running in Chrome on July 2nd, 2024](screenshot.png)
 
 ## Description
 

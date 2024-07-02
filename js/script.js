@@ -83,63 +83,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateMap() {
-        map.eachLayer((layer) => {
-            if (layer instanceof L.CircleMarker) {
-                map.removeLayer(layer);
-            }
-        });
-    
-        earthquakes.forEach(quake => {
-            const [lon, lat] = quake.geometry.coordinates;
-            const magnitude = quake.properties.mag;
-            
-            // New scaling function
-            const baseRadius = calculateRadius(magnitude);
-    
-            // Create concentric rings
-            const rings = [1, 0.75, 0.5, 0.25]; // Percentage of the base radius
-            rings.forEach((ringPercentage, index) => {
-                const radius = baseRadius * ringPercentage;
-                const circle = L.circle([lat, lon], {
-                    color: getColor(magnitude, index),
-                    fillColor: getColor(magnitude, index),
-                    fillOpacity: 0.2 + (index * 0.2), // Inner rings are more opaque
-                    weight: 1,
-                    radius: radius
-                }).addTo(map);
-    
-                // Only add popup to the innermost ring
-                if (index > 0) {
-                    circle.bindPopup(createPopupContent(quake));
-                }
-            });
-        });
-    }
-
     function calculateRadius(magnitude) {
         // More dramatic scaling function
         if (magnitude < 3) {
-            return Math.pow(2, magnitude) * 100; // Smaller for low magnitudes
+            return Math.pow(2.5, magnitude) * 100; // Smaller for low magnitudes
         } else if (magnitude < 5) {
-            return Math.pow(2, magnitude) * 1000;
-        } else if (magnitude < 7) {
             return Math.pow(2.5, magnitude) * 1000;
+        } else if (magnitude < 7) {
+            return Math.pow(2.5, magnitude) * 1300;
         } else {
             return Math.pow(2.5, magnitude) * 2000; // Much larger for high magnitudes
         }
     }
-    
+
     function getColor(magnitude, ringIndex) {
-        const baseColor = magnitude <= 3 ? '#4caf50' :
-                          magnitude <= 5 ? '#ffc107' :
-                          magnitude <= 7 ? '#ff5722' : '#b71c1c';
-        
-        const alternateColor = magnitude <= 3 ? '#45a049' :
-                               magnitude <= 5 ? '#e6ac00' :
-                               magnitude <= 7 ? '#e64a19' : '#9e1818';
-        
-        return ringIndex % 2 === 0 ? baseColor : alternateColor;
+        const colors = [
+            { base: '#adff2f', alt: '#9ae62a' }, // Yellow-green
+            { base: '#ffff00', alt: '#e6e600' }, // Yellow
+            { base: '#ffa500', alt: '#e69400' }, // Orange
+            { base: '#ff4500', alt: '#e63e00' }, // Red-orange
+            { base: '#ff0000', alt: '#e60000' }, // Red
+            { base: '#dc143c', alt: '#c51236' }, // Crimson
+            { base: '#b22222', alt: '#9e1e1e' }, // Fire brick
+            { base: '#8b0000', alt: '#7a0000' }  // Dark red
+        ];
+    
+        const colorIndex = Math.min(Math.floor(magnitude) - 1, colors.length - 1);
+        const { base, alt } = colors[colorIndex];
+    
+        return ringIndex % 2 === 0 ? base : alt;
     }
 
     function createPopupContent(quake) {
@@ -375,6 +347,117 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 break;
         }
+        updateUI(earthquakes);
+    }
+
+    let minMagnitude = 2;
+    let timeRange = 14; // days
+
+    document.getElementById('settings-btn').addEventListener('click', function() {
+        const panel = document.getElementById('settings-panel');
+        panel.classList.toggle('d-none');
+    });
+
+    document.getElementById('apply-settings').addEventListener('click', function() {
+        minMagnitude = parseFloat(document.getElementById('magnitude-threshold').value);
+        timeRange = parseInt(document.getElementById('time-range').value);
+        fetchEarthquakes();
+        document.getElementById('settings-panel').classList.add('d-none');
+    });
+
+    let selectedContinent = 'all';
+
+    document.getElementById('continent-filter').addEventListener('change', function() {
+        selectedContinent = this.value;
+        updateUI(earthquakes);
+    });
+
+    function updateUI(quakes) {
+        const filteredQuakes = selectedContinent === 'all' ? 
+            quakes : 
+            quakes.filter(quake => getContinent(quake.geometry.coordinates[1], quake.geometry.coordinates[0]) === selectedContinent);
+        
+        updateQuakeList(filteredQuakes);
+        updateMap(filteredQuakes);
+        updateCharts(filteredQuakes);
+    }
+
+    function getContinent(lat, lon) {
+        // This is a very simplified way to determine continents.
+        if (lat > 15 && lat < 75 && lon > -170 && lon < -50) return 'north_america';
+        if (lat < 15 && lat > -60 && lon > -80 && lon < -35) return 'south_america';
+        if (lat > 35 && lat < 70 && lon > -25 && lon < 40) return 'europe';
+        if (lat > -10 && lat < 80 && lon > 40 && lon < 180) return 'asia';
+        if (lat > -40 && lat < 35 && lon > -20 && lon < 55) return 'africa';
+        if (lat < -10 && lat > -50 && lon > 110 && lon < 180) return 'australia';
+        return 'other';
+    }
+
+    let showHeatmap = false;
+    let heatmapLayer;
+
+    function updateMap(quakes) {
+        // Clear existing layers
+        map.eachLayer((layer) => {
+            if (layer instanceof L.CircleMarker || layer instanceof L.FeatureGroup || layer instanceof L.HeatLayer) {
+                map.removeLayer(layer);
+            }
+        });
+
+        if (showHeatmap) {
+            const heatData = quakes.map(quake => {
+                const [lon, lat] = quake.geometry.coordinates;
+                return [lat, lon, quake.properties.mag * 5]; // Multiply by 5 to make the heatmap more visible
+            });
+            heatmapLayer = L.heatLayer(heatData, {radius: 25}).addTo(map);
+        } else {
+            map.eachLayer((layer) => {
+                if (layer instanceof L.CircleMarker) {
+                    map.removeLayer(layer);
+                }
+            });
+        
+            earthquakes.forEach(quake => {
+                const [lon, lat] = quake.geometry.coordinates;
+                const magnitude = quake.properties.mag;
+                
+                // New scaling function
+                const baseRadius = calculateRadius(magnitude);
+        
+                // Create concentric rings
+                const rings = [1, 0.75, 0.5, 0.25]; // Percentage of the base radius
+                rings.forEach((ringPercentage, index) => {
+                    const radius = baseRadius * ringPercentage;
+                    const circle = L.circle([lat, lon], {
+                        color: getColor(magnitude, index),
+                        fillColor: getColor(magnitude, index),
+                        fillOpacity: 0.2 + (index * 0.2), // Inner rings are more opaque
+                        weight: 1,
+                        radius: radius
+                    }).addTo(map);
+        
+                    // Only add popup to the innermost ring
+                    if (index > 0) {
+                        circle.bindPopup(createPopupContent(quake));
+                    }
+                });
+            });
+        }
+    }
+
+    document.getElementById('heatmap-toggle').addEventListener('change', function() {
+        showHeatmap = this.checked;
+        updateMap(earthquakes);
+    });
+
+    async function fetchEarthquakes() {
+        const endtime = new Date().toISOString();
+        const starttime = new Date(Date.now() - timeRange * 24 * 60 * 60 * 1000).toISOString();
+        const url = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${starttime}&endtime=${endtime}&minmagnitude=${minMagnitude}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        earthquakes = data.features;
         updateUI(earthquakes);
     }
     

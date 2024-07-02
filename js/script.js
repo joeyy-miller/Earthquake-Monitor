@@ -22,9 +22,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function fetchEarthquakes() {
-        const response = await fetch('https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2024-06-02&endtime=2024-07-02&minmagnitude=4');
-        const data = await response.json();
-        return data.features;
+        try {
+            const endtime = new Date().toISOString();
+            const starttime = new Date(Date.now() - timeRange * 24 * 60 * 60 * 1000).toISOString();
+            const url = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${starttime}&endtime=${endtime}&minmagnitude=${minMagnitude}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            earthquakes = data.features;
+            updateUI(earthquakes);
+            updateLastUpdatedTime(); // Add this line
+        } catch (error) {
+            console.error("There was a problem fetching the earthquake data:", error);
+            alert("There was a problem fetching the earthquake data. Please try again later.");
+        }
     }
 
     function updateUI(quakes) {
@@ -460,6 +474,11 @@ document.addEventListener('DOMContentLoaded', function() {
         earthquakes = data.features;
         updateUI(earthquakes);
     }
+
+    function updateLastUpdatedTime() {
+        const now = new Date();
+        document.getElementById('update-time').textContent = now.toLocaleString();
+    }
     
     // Optionally, set the 'Most Recent' button as active by default
     document.getElementById('sort-recent').classList.add('active-sort');
@@ -470,11 +489,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function init() {
         initMap();
-        const quakes = await fetchEarthquakes();
-        updateUI(quakes);
+        updateLastUpdatedTime(); // Add this line
+        await fetchEarthquakes();
+        // Set up periodic updates
         setInterval(async () => {
-            const updatedQuakes = await fetchEarthquakes();
-            updateUI(updatedQuakes);
+            await fetchEarthquakes();
+            updateLastUpdatedTime(); // Add this line
         }, 300000); // Update every 5 minutes
     }
 

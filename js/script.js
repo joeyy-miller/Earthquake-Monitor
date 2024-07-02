@@ -3,10 +3,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let earthquakes = [];
 
     function initMap() {
-        map = L.map('map').setView([0, 0], 2);
+        // Start with a more zoomed-in view
+        map = L.map('map', {
+            center: [20, 0],  // Centering around 20° latitude, 0° longitude
+            zoom: 3,          // Increased zoom level
+            minZoom: 3,       // Set minimum zoom to prevent zooming out too far
+            worldCopyJump: true  // Allows the map to wrap around the antimeridian
+        });
+    
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
+    
+        // Trigger a resize event after map initialization
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 0);
     }
 
     async function fetchEarthquakes() {
@@ -26,6 +38,25 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error updating UI:', error);
         }
     }
+
+    const sortButtons = document.querySelectorAll('.sort-btn');
+        
+    function handleSortClick(event) {
+        // Remove 'active-sort' class from all buttons
+        sortButtons.forEach(button => button.classList.remove('active-sort'));
+        
+        // Add 'active-sort' class to the clicked button
+        event.target.classList.add('active-sort');
+        
+        // Call the sortEarthquakes function with the appropriate method
+        const sortMethod = event.target.id.split('-')[1]; // Extracts 'recent', 'magnitude', or 'continent'
+        sortEarthquakes(sortMethod);
+    }
+    
+    // Add click event listener to each sort button
+    sortButtons.forEach(button => {
+        button.addEventListener('click', handleSortClick);
+    });
     
 
     function updateQuakeList() {
@@ -58,28 +89,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 map.removeLayer(layer);
             }
         });
-
+    
         earthquakes.forEach(quake => {
             const [lon, lat] = quake.geometry.coordinates;
             const magnitude = quake.properties.mag;
-            const radius = Math.pow(2, magnitude) * 1000;
-
-            const circle = L.circle([lat, lon], {
-                color: getColor(magnitude),
-                fillColor: getColor(magnitude),
-                fillOpacity: 0.5,
-                radius: radius
-            }).addTo(map);
-
-            circle.bindPopup(createPopupContent(quake));
+            
+            // New scaling function
+            const baseRadius = calculateRadius(magnitude);
+    
+            // Create concentric rings
+            const rings = [1, 0.75, 0.5, 0.25]; // Percentage of the base radius
+            rings.forEach((ringPercentage, index) => {
+                const radius = baseRadius * ringPercentage;
+                const circle = L.circle([lat, lon], {
+                    color: getColor(magnitude, index),
+                    fillColor: getColor(magnitude, index),
+                    fillOpacity: 0.2 + (index * 0.2), // Inner rings are more opaque
+                    weight: 1,
+                    radius: radius
+                }).addTo(map);
+    
+                // Only add popup to the innermost ring
+                if (index > 0) {
+                    circle.bindPopup(createPopupContent(quake));
+                }
+            });
         });
     }
 
-    function getColor(magnitude) {
-        if (magnitude <= 3) return '#4caf50';
-        if (magnitude <= 5) return '#ffc107';
-        if (magnitude <= 7) return '#ff5722';
-        return '#b71c1c';
+    function calculateRadius(magnitude) {
+        // More dramatic scaling function
+        if (magnitude < 3) {
+            return Math.pow(2, magnitude) * 100; // Smaller for low magnitudes
+        } else if (magnitude < 5) {
+            return Math.pow(2, magnitude) * 1000;
+        } else if (magnitude < 7) {
+            return Math.pow(2.5, magnitude) * 1000;
+        } else {
+            return Math.pow(2.5, magnitude) * 2000; // Much larger for high magnitudes
+        }
+    }
+    
+    function getColor(magnitude, ringIndex) {
+        const baseColor = magnitude <= 3 ? '#4caf50' :
+                          magnitude <= 5 ? '#ffc107' :
+                          magnitude <= 7 ? '#ff5722' : '#b71c1c';
+        
+        const alternateColor = magnitude <= 3 ? '#45a049' :
+                               magnitude <= 5 ? '#e6ac00' :
+                               magnitude <= 7 ? '#e64a19' : '#9e1818';
+        
+        return ringIndex % 2 === 0 ? baseColor : alternateColor;
     }
 
     function createPopupContent(quake) {
@@ -87,16 +147,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const location = quake.properties.place;
         const time = new Date(quake.properties.time).toLocaleString();
         const depth = quake.geometry.coordinates[2];
-
+        const chartId = `quake-chart-${quake.id}`;
+    
         return `
             <h5>M${magnitude.toFixed(1)} Earthquake</h5>
-            <p>${location}</p>
-            <p>Time: ${time}</p>
-            <p>Depth: ${depth.toFixed(2)} km</p>
-            <canvas id="quake-comparison-chart" width="200" height="100"></canvas>
+            <p><strong>Location:</strong> ${location}</p>
+            <p><strong>Time:</strong> ${time}</p>
+            <p><strong>Depth:</strong> ${depth.toFixed(2)} km</p>
+            <canvas id="${chartId}" width="200" height="100"></canvas>
         `;
     }
-
+    
+    
     function zoomToQuake(quake) {
         const [lon, lat] = quake.geometry.coordinates;
         map.setView([lat, lon], 6);
@@ -112,7 +174,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function createComparisonChart(quake) {
-        const ctx = document.getElementById('quake-comparison-chart').getContext('2d');
+        const chartId = `quake-chart-${quake.id}`;
+        const ctx = document.getElementById(chartId).getContext('2d');
         const magnitudes = earthquakes.map(q => q.properties.mag);
         const maxMagnitude = Math.max(...magnitudes);
         
@@ -127,10 +190,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 }]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Magnitude Comparison',
+                        color: '#ffffff'
+                    }
+                },
                 scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#ffffff'
+                        }
+                    },
                     y: {
-                        beginAtZero: true,
-                        max: Math.ceil(maxMagnitude)
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#ffffff'
+                        }
                     }
                 }
             }
@@ -162,21 +249,58 @@ document.addEventListener('DOMContentLoaded', function() {
             magnitudeChart.destroy();
         }
     
+        const labels = Object.keys(magnitudeCounts).sort((a, b) => Number(a) - Number(b));
+        const data = labels.map(label => magnitudeCounts[label]);
+    
         magnitudeChart = new Chart(ctx, {
-            type: 'pie',
+            type: 'bar',
             data: {
-                labels: Object.keys(magnitudeCounts),
+                labels: labels,
                 datasets: [{
-                    data: Object.values(magnitudeCounts),
-                    backgroundColor: Object.keys(magnitudeCounts).map(mag => getColor(parseInt(mag)))
+                    label: 'Number of Earthquakes',
+                    data: data,
+                    backgroundColor: labels.map(mag => getColor(Number(mag))),
+                    borderColor: labels.map(mag => getColor(Number(mag))),
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                title: {
-                    display: true,
-                    text: 'Earthquakes by Magnitude'
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Earthquakes by Magnitude',
+                        color: '#ffffff'
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#ffffff'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Magnitude ${context.label}: ${context.raw} earthquakes`;
+                        }
+                    }
                 }
             }
         });
@@ -219,8 +343,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     text: 'Earthquakes in the Last 24 Hours'
                 },
                 scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        grid: {
+                            display: false
+                        }
                     }
                 }
             }
@@ -245,6 +377,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updateUI(earthquakes);
     }
+    
+    // Optionally, set the 'Most Recent' button as active by default
+    document.getElementById('sort-recent').classList.add('active-sort');
 
     document.getElementById('sort-recent').addEventListener('click', () => sortEarthquakes('recent'));
     document.getElementById('sort-magnitude').addEventListener('click', () => sortEarthquakes('magnitude'));

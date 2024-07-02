@@ -12,7 +12,32 @@
 </head>
 <body class="d-flex flex-column vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Recent Quakes</a>
+        <a class="navbar-brand" href="#">
+            <svg width="250" height="50" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+                <style>
+                  .text { font: bold 24px sans-serif; fill: #ffffff; }
+                  .wave { fill: none; stroke: #ffffff; stroke-width: 2; }
+                </style>
+                
+                <text x="10" y="35" class="text">Earthquake Viewer</text>
+                
+                <path class="wave" d="">
+                  <animate 
+                    attributeName="d" 
+                    dur="1.4s" 
+                    repeatCount="indefinite"
+                    values="
+                      M10 45 L15 41 L20 46 L25 40 L30 47 L35 42 L40 45 L45 39 L50 48 L55 41 L60 46 L65 40 L70 47 L75 42 L80 45 L85 39 L90 48 L95 41 L100 46 L105 40 L110 47 L115 42 L120 45 L125 39 L130 48 L135 41 L140 46 L145 40 L150 47 L155 42 L160 45 L165 39 L170 48 L175 41 L180 46 L185 40 L190 47;
+                      M10 47 L15 40 L20 48 L25 41 L30 45 L35 39 L40 47 L45 42 L50 46 L55 40 L60 48 L65 41 L70 45 L75 39 L80 47 L85 42 L90 46 L95 40 L100 48 L105 41 L110 45 L115 39 L120 47 L125 42 L130 46 L135 40 L140 48 L145 41 L150 45 L155 39 L160 47 L165 42 L170 46 L175 40 L180 48 L185 41 L190 45;
+                      M10 42 L15 47 L20 40 L25 46 L30 41 L35 48 L40 42 L45 45 L50 39 L55 47 L60 40 L65 46 L70 41 L75 48 L80 42 L85 45 L90 39 L95 47 L100 40 L105 46 L110 41 L115 48 L120 42 L125 45 L130 39 L135 47 L140 40 L145 46 L150 41 L155 48 L160 42 L165 45 L170 39 L175 47 L180 40 L185 46 L190 41;
+                      M10 46 L15 39 L20 47 L25 42 L30 48 L35 40 L40 46 L45 41 L50 47 L55 39 L60 45 L65 42 L70 48 L75 40 L80 46 L85 41 L90 47 L95 39 L100 45 L105 42 L110 48 L115 40 L120 46 L125 41 L130 47 L135 39 L140 45 L145 42 L150 48 L155 40 L160 46 L165 41 L170 47 L175 39 L180 45 L185 42 L190 48;
+                      M10 45 L15 41 L20 46 L25 40 L30 47 L35 42 L40 45 L45 39 L50 48 L55 41 L60 46 L65 40 L70 47 L75 42 L80 45 L85 39 L90 48 L95 41 L100 46 L105 40 L110 47 L115 42 L120 45 L125 39 L130 48 L135 41 L140 46 L145 40 L150 47 L155 42 L160 45 L165 39 L170 48 L175 41 L180 46 L185 40 L190 47
+                    "
+                  />
+                </path>
+              </svg>
+              
+        </a>
         <span class="navbar-text ml-auto" id="last-updated">
             Last Updated At: <span id="update-time"></span>
         </span>
@@ -22,15 +47,17 @@
         <div class="row h-100">
             <div class="col-md-3 d-flex flex-column">
                 <div class="mb-3 mt-3 btn-group" role="group">
-                    <button class="btn btn-default btn-sm" id="sort-recent">Most Recent</button>
-                    <button class="btn btn-default btn-sm" id="sort-magnitude">Highest Magnitude</button>
-                    <button class="btn btn-default btn-sm" id="sort-continent">By Continent</button>
+                    <button class="btn btn-default btn-sm sort-btn" id="sort-recent">Most Recent</button>
+                    <button class="btn btn-default btn-sm sort-btn" id="sort-magnitude">Highest Magnitude</button>
+                    <button class="btn btn-default btn-sm sort-btn" id="sort-continent">By Continent</button>
                 </div>
                 <div id="quake-list" class="list-group flex-grow-1 overflow-auto"></div>
-                <div class="chart-container">
+                <div class="chart-container magnitude-container">
+                    <p>Earthquakes by Magnitude:</p>
                     <canvas id="magnitude-chart"></canvas>
                 </div>
-                <div class="chart-container">
+                <div class="chart-container hourly-container">
+                    <p>Earthquakes by Hour:</p>
                     <canvas id="hourly-chart"></canvas>
                 </div>
             </div>

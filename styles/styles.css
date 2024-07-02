@@ -37,6 +37,66 @@ aside {
 
 #map {
     width: 105%;
+    background: #121212;
+}
+
+.chart-container {
+    height: 300px;  /* or whatever height you prefer */
+    margin-top: 20px;
+    background-color: rgba(0, 0, 0, 0.2);  /* slight background for the chart area */
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Dark theme for Leaflet popups */
+.leaflet-popup-content-wrapper {
+    background: #2b2b2b;
+    color: #ffffff;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.leaflet-popup-content {
+    margin: 10px;
+}
+
+.leaflet-popup-tip-container {
+    display: none;  /* Remove the tip */
+}
+
+/* Style for the close button */
+.leaflet-popup-close-button {
+    color: #ffffff;
+    opacity: 0.7;
+}
+
+.leaflet-popup-close-button:hover {
+    color: #ffffff;
+    opacity: 1;
+}
+
+/* Custom styles for popup content */
+.leaflet-popup-content h5 {
+    color: #ffc107;  /* Yellow color for the title */
+    margin-bottom: 10px;
+}
+
+.leaflet-popup-content p {
+    margin: 5px 0;
+}
+
+/* Style for any links in the popup */
+.leaflet-popup-content a {
+    color: #4caf50;  /* Green color for links */
+}
+
+.leaflet-popup-content a:hover {
+    color: #45a049;
+}
+
+/* Style for the popup container */
+.leaflet-popup {
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
 }
 
 
@@ -47,21 +107,48 @@ button.btn-sm {
 
 .btn-default:hover {
     color: #333;
-    background-color: #d5d5d5;
-    border-color: #adadad;
+    background-color: #d5d5d5 !important;
+    border-color: #adadad !important;
 }
 
+.leaflet-container a.leaflet-popup-close-button {
+    font: 24px / 14px Tahoma, Verdana, sans-serif;
+    height: 30px;
+    width: 22px;
+}
+
+
 button#sort-magnitude {
-    border-left: 1px solid #fff;
+    border-left: 1px solid #d5d5d5;
 }
 
 button#sort-continent {
-    border-left: 1px solid #fff;
+    border-left: 1px solid #d5d5d5;
+}
+
+.sort-btn.active-sort {
+    background-color: #121212;
+    border-color: #2e2e2e;
+}
+
+#hourly-chart {
+    width: 100% !important;
+}
+
+nav svg {
+    overflow: overlay;
 }
 
 #quake-list {
     min-height: 200px;
     max-height: 40vh;
+    overflow-y: scroll;
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+}
+#quake-list::-webkit-scrollbar {
+    width: 0px;  /* For Chrome, Safari, and Opera */
+    background: transparent;
 }
 
 .quake-item {
@@ -69,6 +156,8 @@ button#sort-continent {
     padding: 0.5rem;
     border-radius: 4px;
 }
+
+
 
 .magnitude-1, .magnitude-2, .magnitude-3 { background-color: #4caf50; }
 .magnitude-4, .magnitude-5 { background-color: #ffc107; }
@@ -88,8 +177,15 @@ button#sort-continent {
     overflow-y: auto;
 }
 .chart-container {
-    height: 300px;
     margin-top: 20px;
+}
+
+.hourly-container {
+    height: 300px;
+}
+
+.magnitude-container {
+    height: 200px;
 }
 
 #map .magnitude-1, #map .magnitude-2, #map .magnitude-3 { background-color: rgba(76, 175, 80, 0.7); }

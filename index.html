@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recent Quakes</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     
     <!-- Custom CSS -->
@@ -13,6 +14,7 @@
 <body class="d-flex flex-column vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark">
         <a class="navbar-brand" href="#">
+            <i class="fas fa-globe-americas mr-2"></i>
             <svg width="250" height="50" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
                 <style>
                   .text { font: bold 24px sans-serif; fill: #ffffff; }
@@ -38,32 +40,32 @@
               </svg>
         </a>
         <span class="navbar-text ml-auto" id="last-updated">
-            Last Updated At: <span id="update-time"></span>
+            <i class="far fa-clock mr-1"></i>Last Updated At: <span id="update-time"></span>
         </span>
         <button class="btn btn-outline-light ml-2" id="settings-btn">
-            <i class="fas fa-cog"></i> Settings
+            <i class="fas fa-cog mr-1"></i> Settings
         </button>
     </nav>
     
     <div id="settings-panel" class="d-none">
-        <h5>Settings</h5>
+        <h5><i class="fas fa-sliders-h mr-2"></i>Settings</h5>
         <div class="form-group">
-            <label for="magnitude-threshold">Minimum Magnitude</label>
-            <input type="number" class="form-control" id="magnitude-threshold" min="0" step="0.1" value="2">
+            <label for="magnitude-threshold"><i class="fas fa-tachometer-alt mr-1"></i>Minimum Magnitude</label>
+            <input type="number" class="form-control" id="magnitude-threshold" min="0" step="0.1" value="2.0">
         </div>
         <div class="form-group">
-            <label for="time-range">Time Range</label>
+            <label for="time-range"><i class="far fa-calendar-alt mr-1"></i>Time Range</label>
             <select class="form-control" id="time-range">
                 <option value="1">Last 24 hours</option>
                 <option value="7">Last 7 days</option>
-                <option selected value="14">Last 14 days</option>
+                <option value="14" selected>Last 14 days</option>
                 <option value="30">Last 30 days</option>
             </select>
         </div>
         <div class="form-group">
-            <label for="continent-filter">Continent</label>
+            <label for="continent-filter"><i class="fas fa-map-marker-alt mr-1"></i>Continent</label>
             <select class="form-control" id="continent-filter">
-                <option value="all">All</option>
+                <option value="all" selected>All</option>
                 <option value="north_america">North America</option>
                 <option value="south_america">South America</option>
                 <option value="europe">Europe</option>
@@ -75,10 +77,12 @@
         <div class="form-check">
             <input class="form-check-input" type="checkbox" id="heatmap-toggle">
             <label class="form-check-label" for="heatmap-toggle">
-                Show Heatmap
+                <i class="fas fa-fire mr-1"></i>Show Heatmap
             </label>
         </div>
-        <button class="btn btn-primary" id="apply-settings">Apply</button>
+        <button class="btn btn-primary mt-3" id="apply-settings">
+            <i class="fas fa-check mr-1"></i>Apply
+        </button>
     </div>
 
     <div class="container-fluid flex-grow-1">

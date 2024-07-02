@@ -86,8 +86,9 @@ document.addEventListener('DOMContentLoaded', function() {
             quakeItem.href = '#';
             quakeItem.classList.add('list-group-item', 'list-group-item-action', `magnitude-${Math.floor(magnitude)}`);
             quakeItem.innerHTML = `
+                <i class="fas fa-exclamation-triangle mr-2"></i>
                 <strong>M${magnitude.toFixed(1)}</strong> - ${location}<br>
-                ${time}
+                <i class="far fa-clock mr-2"></i>${time}
             `;
             quakeItem.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -96,6 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
             quakeList.appendChild(quakeItem);
         });
     }
+
+    
 
     function calculateRadius(magnitude) {
         // More dramatic scaling function
@@ -136,11 +139,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const chartId = `quake-chart-${quake.id}`;
     
         return `
-            <h5>M${magnitude.toFixed(1)} Earthquake</h5>
-            <p><strong>Location:</strong> ${location}</p>
-            <p><strong>Time:</strong> ${time}</p>
-            <p><strong>Depth:</strong> ${depth.toFixed(2)} km</p>
-            <canvas id="${chartId}" width="200" height="100"></canvas>
+            <div class="quake-popup">
+                <h5><i class="fas fa-exclamation-circle mr-2"></i>M${magnitude.toFixed(1)} Earthquake</h5>
+                <p><i class="fas fa-map-marker-alt mr-2"></i><strong>Location:</strong> ${location}</p>
+                <p><i class="far fa-clock mr-2"></i><strong>Time:</strong> ${time}</p>
+                <p><i class="fas fa-arrow-down mr-2"></i><strong>Depth:</strong> ${depth.toFixed(2)} km</p>
+                <canvas id="${chartId}" width="200" height="100"></canvas>
+            </div>
         `;
     }
     
@@ -290,6 +295,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+
+        // After creating the chart
+        const chartCanvas = document.getElementById('magnitude-chart');
+        const iconHtml = '<i class="fas fa-chart-bar" style="margin-right: 10px;"></i>';
+        chartCanvas.insertAdjacentHTML('beforebegin', iconHtml);
     }
 
     function updateHourlyChart() {

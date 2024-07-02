@@ -39,6 +39,26 @@ aside {
     width: 105%;
 }
 
+
+button.btn-sm {
+    color: #fff;
+    background: #2e2e2e;
+}
+
+.btn-default:hover {
+    color: #333;
+    background-color: #d5d5d5;
+    border-color: #adadad;
+}
+
+button#sort-magnitude {
+    border-left: 1px solid #fff;
+}
+
+button#sort-continent {
+    border-left: 1px solid #fff;
+}
+
 #quake-list {
     min-height: 200px;
     max-height: 40vh;

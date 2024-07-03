@@ -184,8 +184,6 @@ nav svg {
     border-color: #007bff;
 }
 
-
-
 .magnitude-1, .magnitude-2, .magnitude-3 { background-color: #4caf50; }
 .magnitude-4, .magnitude-5 { background-color: #ffc107; }
 .magnitude-6, .magnitude-7 { background-color: #ff5722; }
@@ -209,6 +207,12 @@ nav svg {
     border-bottom: 1px solid #7d7d7d;
     color: #fff;
 }
+.leaflet-bar a, .leaflet-bar a:hover {
+    background-color: #7d7d7d;
+    border-bottom: 1px solid #7d7d7d;
+    color: #fff;
+}
+
 #quake-list {
     max-height: 50vh;
     overflow-y: auto;

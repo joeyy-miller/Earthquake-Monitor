@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     let map;
     let earthquakes = [];
+    let showHeatmap = false;
+    let heatmapLayer;
+    const sortButtons = document.querySelectorAll('.sort-btn');
+    let minMagnitude = 2;
+    let timeRange = 14; // days
+    let selectedContinent = 'all';
+    let magnitudeChart = null;
+    let hourlyChart = null;
 
     function initMap() {
         // Start with a more zoomed-in view
@@ -52,8 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error updating UI:', error);
         }
     }
-
-    const sortButtons = document.querySelectorAll('.sort-btn');
         
     function handleSortClick(event) {
         // Remove 'active-sort' class from all buttons
@@ -224,9 +230,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    let magnitudeChart = null;
-    let hourlyChart = null;
-
     function updateMagnitudeChart() {
         const magnitudeCounts = earthquakes.reduce((acc, quake) => {
             const mag = Math.floor(quake.properties.mag);
@@ -374,9 +377,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateUI(earthquakes);
     }
 
-    let minMagnitude = 2;
-    let timeRange = 14; // days
-
     document.getElementById('settings-btn').addEventListener('click', function() {
         const panel = document.getElementById('settings-panel');
         panel.classList.toggle('d-none');
@@ -388,8 +388,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fetchEarthquakes();
         document.getElementById('settings-panel').classList.add('d-none');
     });
-
-    let selectedContinent = 'all';
 
     document.getElementById('continent-filter').addEventListener('change', function() {
         selectedContinent = this.value;
@@ -416,9 +414,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (lat < -10 && lat > -50 && lon > 110 && lon < 180) return 'australia';
         return 'other';
     }
-
-    let showHeatmap = false;
-    let heatmapLayer;
 
     function updateMap(quakes) {
         // Clear existing layers
